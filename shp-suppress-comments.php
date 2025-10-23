@@ -27,10 +27,10 @@ class SHP_Suppress_Comments {
      */
     public function __construct() {
         // Disable comment support for all post types
-        add_action('init', array($this, 'disable_comments_post_types'));
+        add_action('init', [$this, 'disableCommentsPostTypes']);
         
         // Remove comment-related admin menus
-        add_action('admin_menu', array($this, 'remove_comment_menus'));
+        add_action('admin_menu', [$this, 'removeCommentMenus']);
         
         // Disable comments on the frontend
         add_filter('comments_open', '__return_false', 20, 2);
@@ -40,47 +40,47 @@ class SHP_Suppress_Comments {
         add_filter('comments_array', '__return_empty_array', 10, 2);
         
         // Remove comment support from post types
-        add_action('admin_init', array($this, 'remove_comment_support'));
+        add_action('admin_init', [$this, 'removeCommentSupport']);
         
         // Disable comment-related widgets
-        add_action('widgets_init', array($this, 'disable_comment_widgets'));
+        add_action('widgets_init', [$this, 'disableCommentWidgets']);
         
         // Remove comment links from admin bar
-        add_action('admin_bar_menu', array($this, 'remove_comments_admin_bar'), 999);
+        add_action('admin_bar_menu', [$this, 'removeCommentsAdminBar'], 999);
         
         // Hide comment-related dashboard widgets
-        add_action('wp_dashboard_setup', array($this, 'remove_comment_dashboard_widgets'));
+        add_action('wp_dashboard_setup', [$this, 'removeCommentDashboardWidgets']);
         
         // Disable comment REST API endpoints
-        add_filter('rest_endpoints', array($this, 'disable_comment_rest_api'));
+        add_filter('rest_endpoints', [$this, 'disableCommentRestApi']);
         
         // Prevent programmatic comment insertion
-        add_filter('pre_comment_approved', array($this, 'prevent_comment_insertion'), 10, 2);
+        add_filter('pre_comment_approved', [$this, 'preventCommentInsertion'], 10, 2);
         
         // Block wp_insert_comment and wp_new_comment
-        add_action('pre_comment_on_post', array($this, 'block_comment_on_post'));
+        add_action('pre_comment_on_post', [$this, 'blockCommentOnPost']);
         
         // Remove comment-related meta boxes from post edit screens
-        add_action('admin_menu', array($this, 'remove_comment_meta_boxes'));
+        add_action('admin_menu', [$this, 'removeCommentMetaBoxes']);
         
         // Disable XML-RPC comment methods
-        add_filter('xmlrpc_methods', array($this, 'disable_xmlrpc_comments'));
+        add_filter('xmlrpc_methods', [$this, 'disableXmlrpcComments']);
         
         // Remove comment count from admin menu
-        add_action('admin_print_styles-index.php', array($this, 'hide_dashboard_comment_counts'));
+        add_action('admin_print_styles-index.php', [$this, 'hideDashboardCommentCounts']);
         
         // Intercept comment form submissions
         add_action('comment_form', '__return_false');
         
         // Disable comment feeds
-        add_action('do_feed_rss2_comments', array($this, 'disable_comment_feeds'));
-        add_action('do_feed_atom_comments', array($this, 'disable_comment_feeds'));
+        add_action('do_feed_rss2_comments', [$this, 'disableCommentFeeds']);
+        add_action('do_feed_atom_comments', [$this, 'disableCommentFeeds']);
     }
     
     /**
      * Disable comment support for all post types
      */
-    public function disable_comments_post_types() {
+    public function disableCommentsPostTypes() {
         $post_types = get_post_types();
         foreach ($post_types as $post_type) {
             if (post_type_supports($post_type, 'comments')) {
@@ -93,7 +93,7 @@ class SHP_Suppress_Comments {
     /**
      * Remove comment-related admin menus
      */
-    public function remove_comment_menus() {
+    public function removeCommentMenus() {
         // Remove Comments menu
         remove_menu_page('edit-comments.php');
         
@@ -104,7 +104,7 @@ class SHP_Suppress_Comments {
     /**
      * Remove comment support during admin initialization
      */
-    public function remove_comment_support() {
+    public function removeCommentSupport() {
         $post_types = get_post_types();
         foreach ($post_types as $post_type) {
             remove_post_type_support($post_type, 'comments');
@@ -115,28 +115,28 @@ class SHP_Suppress_Comments {
     /**
      * Disable comment-related widgets
      */
-    public function disable_comment_widgets() {
+    public function disableCommentWidgets() {
         unregister_widget('WP_Widget_Recent_Comments');
     }
     
     /**
      * Remove comments from admin bar
      */
-    public function remove_comments_admin_bar($wp_admin_bar) {
+    public function removeCommentsAdminBar($wp_admin_bar) {
         $wp_admin_bar->remove_node('comments');
     }
     
     /**
      * Remove comment-related dashboard widgets
      */
-    public function remove_comment_dashboard_widgets() {
+    public function removeCommentDashboardWidgets() {
         remove_meta_box('dashboard_recent_comments', 'dashboard', 'normal');
     }
     
     /**
      * Disable comment REST API endpoints
      */
-    public function disable_comment_rest_api($endpoints) {
+    public function disableCommentRestApi($endpoints) {
         if (isset($endpoints['/wp/v2/comments'])) {
             unset($endpoints['/wp/v2/comments']);
         }
@@ -149,7 +149,7 @@ class SHP_Suppress_Comments {
     /**
      * Prevent programmatic comment insertion
      */
-    public function prevent_comment_insertion($approved, $commentdata) {
+    public function preventCommentInsertion($approved, $commentdata) {
         // Return 'spam' to prevent comment from being inserted
         return 'spam';
     }
@@ -157,14 +157,14 @@ class SHP_Suppress_Comments {
     /**
      * Block comment submissions on posts
      */
-    public function block_comment_on_post($post_id) {
+    public function blockCommentOnPost($post_id) {
         wp_die(__('Comments are completely disabled on this site.', 'shp-suppress-comments'));
     }
     
     /**
      * Remove comment meta boxes from post edit screens
      */
-    public function remove_comment_meta_boxes() {
+    public function removeCommentMetaBoxes() {
         $post_types = get_post_types();
         foreach ($post_types as $post_type) {
             remove_meta_box('commentstatusdiv', $post_type, 'normal');
@@ -176,7 +176,7 @@ class SHP_Suppress_Comments {
     /**
      * Disable XML-RPC comment methods
      */
-    public function disable_xmlrpc_comments($methods) {
+    public function disableXmlrpcComments($methods) {
         unset($methods['wp.newComment']);
         unset($methods['wp.getComments']);
         unset($methods['wp.getComment']);
@@ -188,7 +188,7 @@ class SHP_Suppress_Comments {
     /**
      * Hide dashboard comment counts
      */
-    public function hide_dashboard_comment_counts() {
+    public function hideDashboardCommentCounts() {
         echo '<style>
             #dashboard_right_now .comment-count,
             #dashboard_right_now .comment-mod-count,
@@ -202,7 +202,7 @@ class SHP_Suppress_Comments {
     /**
      * Disable comment feeds
      */
-    public function disable_comment_feeds() {
+    public function disableCommentFeeds() {
         wp_die(__('Comments are completely disabled on this site.', 'shp-suppress-comments'));
     }
 }
